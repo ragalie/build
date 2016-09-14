@@ -336,7 +336,7 @@ func (r Registry) discoverEndpoint(imageName types.ACIdentifier, labels types.La
 		insecure = discovery.InsecureHTTP
 	}
 
-	acis, attempts, err := discovery.DiscoverACIEndpoints(*app, nil, insecure, 0)
+	acis, attempts, err := discovery.DiscoverACIEndpoints(*app, r.AuthConfig.HostHeaders(), insecure, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -355,11 +355,15 @@ func (r Registry) discoverEndpoint(imageName types.ACIdentifier, labels types.La
 }
 
 func (r Registry) download(url, path, label string) error {
-	//TODO: auth
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
 	}
+
+	if header, ok := r.AuthConfig.HostHeaders()[req.URL.Host]; ok {
+		req.Header = header
+	}
+
 	transport := http.DefaultTransport
 	transport.(*http.Transport).Proxy = http.ProxyFromEnvironment
 	if r.Insecure {

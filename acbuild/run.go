@@ -26,10 +26,12 @@ import (
 )
 
 var (
-	insecure   = false
-	workingdir = ""
-	engineName = ""
-	cmdRun     = &cobra.Command{
+	insecure      = false
+	workingdir    = ""
+	engineName    = ""
+	authConfigDir = ""
+
+	cmdRun = &cobra.Command{
 		Use:     "run -- CMD [ARGS]",
 		Short:   "Run a command in an ACI",
 		Long:    "Run a given command in an ACI, and save the resulting container as a new ACI",
@@ -55,6 +57,7 @@ func init() {
 	cmdRun.Flags().BoolVar(&insecure, "insecure", false, "Allows fetching dependencies over http")
 	cmdRun.Flags().StringVar(&workingdir, "working-dir", "", "The working directory inside the container for this command")
 	cmdRun.Flags().StringVar(&engineName, "engine", "systemd-nspawn", "The engine used to run the command. Supported engines: "+engineList)
+	cmdRun.Flags().StringVar(&authConfigDir, "auth-config-dir", "auth.d", "Directory with authentication config file(s)")
 }
 
 func runRun(cmd *cobra.Command, args []string) (exit int) {
@@ -73,7 +76,7 @@ func runRun(cmd *cobra.Command, args []string) (exit int) {
 		return 1
 	}
 
-	err := newACBuild().Run(args, workingdir, insecure, engine)
+	err := newACBuild().Run(args, workingdir, insecure, engine, authConfigDir)
 
 	if err != nil {
 		stderr("run: %v", err)

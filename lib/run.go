@@ -47,7 +47,7 @@ import (
 // changed to its value before running the given command.
 //
 // - runEngine:  The engine used to perform the execution of the command.
-func (a *ACBuild) Run(cmd []string, workingDir string, insecure bool, runEngine engine.Engine) (err error) {
+func (a *ACBuild) Run(cmd []string, workingDir string, insecure bool, runEngine engine.Engine, authConfigDir string) (err error) {
 	if err = a.lock(); err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (a *ACBuild) Run(cmd []string, workingDir string, insecure bool, runEngine 
 		}
 	}
 
-	deps, err := a.renderACI(insecure, a.Debug)
+	deps, err := a.renderACI(insecure, authConfigDir, a.Debug)
 	if err != nil {
 		return err
 	}
@@ -179,10 +179,16 @@ func supportsOverlay() bool {
 	return false
 }
 
-func (a *ACBuild) renderACI(insecure, debug bool) ([]string, error) {
+func (a *ACBuild) renderACI(insecure bool, authConfigDir string, debug bool) ([]string, error) {
+	authConfig, err := registry.ReadAuthConfig(authConfigDir)
+	if err != nil {
+		return nil, err
+	}
+
 	reg := registry.Registry{
 		DepStoreTarPath:      a.DepStoreTarPath,
 		DepStoreExpandedPath: a.DepStoreExpandedPath,
+		AuthConfig:           authConfig,
 		Insecure:             insecure,
 		Debug:                debug,
 	}

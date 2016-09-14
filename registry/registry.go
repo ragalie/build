@@ -49,6 +49,7 @@ var (
 type Registry struct {
 	DepStoreTarPath      string
 	DepStoreExpandedPath string
+	AuthConfig           *AuthConfig
 	Insecure             bool
 	Debug                bool
 }

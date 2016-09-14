@@ -15,6 +15,38 @@ In order to be able to run the command, all dependencies of the current ACI
 must be fetched. The first time `run` is called, the dependencies will be
 downloaded and expanded.
 
+### Authentication
+
+acbuild can use HTTP Basic authentication when fetching dependencies. To use
+authentication, specify a directory using the `--auth-config-dir` flag. By
+default acbuild will look in `auth.d`.
+
+acbuild looks for configuration files with a `.json` file name extension in the
+specified directory and its subdirectories. Each file is expected to contain
+two fields: `domains` and `credentials`.
+
+The `domains` field is an array of strings describing hosts for which the
+following credentials should be used. Each entry must consist of a host in a
+URL as specified by RFC 3986.
+
+The `credentials` field is a map with two keys - `user` and `password`. These
+should be the values needed for successful authentication with the given
+hosts.
+
+For example:
+
+`auth.d/coreos-basic.json`
+
+```
+{
+    "domains": ["coreos.com", "tectonic.com"],
+    "credentials": {
+        "user": "foo",
+        "password": "bar"
+    }
+}
+```
+
 ## Overlayfs
 
 acbuild utilizes overlayfs when running a command in an ACI with dependencies.
