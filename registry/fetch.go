@@ -377,6 +377,11 @@ func (r Registry) download(url, path, label string) error {
 		if len(via) >= 10 {
 			return fmt.Errorf("too many redirects")
 		}
+
+		if header, ok := r.AuthConfig.HostHeaders()[req.URL.Host]; ok {
+			req.Header = header
+		}
+
 		//f.setHTTPHeaders(req, etag)
 		return nil
 	}
