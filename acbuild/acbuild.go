@@ -194,7 +194,7 @@ func runWrapper(cf func(cmd *cobra.Command, args []string) (exit int)) func(cmd 
 
 		a := newACBuild()
 
-		err = a.Begin(absoluteAciToModify, false)
+		err = a.Begin(absoluteAciToModify, false, "")
 		if err != nil {
 			stderr("%v", err)
 			cmdExitCode = getErrorCode(err)

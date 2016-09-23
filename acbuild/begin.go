@@ -31,6 +31,7 @@ var (
 func init() {
 	cmdAcbuild.AddCommand(cmdBegin)
 	cmdBegin.Flags().BoolVar(&insecure, "insecure", false, "Allows fetching dependencies over an unencrypted connection")
+	cmdBegin.Flags().StringVar(&authConfigDir, "auth-config-dir", "auth.d", "Directory with authentication config file(s)")
 }
 
 func runBegin(cmd *cobra.Command, args []string) (exit int) {
@@ -49,9 +50,9 @@ func runBegin(cmd *cobra.Command, args []string) (exit int) {
 
 	var err error
 	if len(args) == 0 {
-		err = newACBuild().Begin("", insecure)
+		err = newACBuild().Begin("", insecure, authConfigDir)
 	} else {
-		err = newACBuild().Begin(args[0], insecure)
+		err = newACBuild().Begin(args[0], insecure, authConfigDir)
 	}
 
 	if err != nil {

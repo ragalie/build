@@ -47,7 +47,7 @@ var (
 // at a.CurrentACIPath. If start is the empty string, the build will begin with
 // an empty ACI, otherwise the ACI stored at start will be used at the starting
 // point.
-func (a *ACBuild) Begin(start string, insecure bool) (err error) {
+func (a *ACBuild) Begin(start string, insecure bool, authConfigDir string) (err error) {
 	_, err = os.Stat(a.ContextPath)
 	switch {
 	case os.IsNotExist(err):
@@ -103,7 +103,7 @@ func (a *ACBuild) Begin(start string, insecure bool) (err error) {
 				start = strings.TrimPrefix(start, dockerPrefix)
 				return a.beginFromRemoteDockerImage(start, insecure)
 			}
-			return a.beginFromRemoteImage(start, insecure)
+			return a.beginFromRemoteImage(start, insecure, authConfigDir)
 		}
 	}
 	return a.beginWithEmptyACI()
@@ -252,7 +252,7 @@ func (a *ACBuild) writeEmptyManifest() error {
 	return nil
 }
 
-func (a *ACBuild) beginFromRemoteImage(start string, insecure bool) error {
+func (a *ACBuild) beginFromRemoteImage(start string, insecure bool, authConfigDir string) error {
 	app, err := discovery.NewAppFromString(start)
 	if err != nil {
 		return err
@@ -274,9 +274,15 @@ func (a *ACBuild) beginFromRemoteImage(start string, insecure bool) error {
 	}
 	defer os.RemoveAll(tmpDepStoreExpandedPath)
 
+	authConfig, err := registry.ReadAuthConfig(authConfigDir)
+	if err != nil {
+		return err
+	}
+
 	reg := registry.Registry{
 		DepStoreTarPath:      tmpDepStoreTarPath,
 		DepStoreExpandedPath: tmpDepStoreExpandedPath,
+		AuthConfig:           authConfig,
 		Insecure:             insecure,
 		Debug:                a.Debug,
 	}
@@ -333,6 +339,7 @@ func (a *ACBuild) beginFromRemoteDockerImage(start string, insecure bool) (err e
 		AllowHTTP:  insecure,
 	}
 
+	// TODO: Docker authentication
 	config := docker2aci.RemoteConfig{
 		CommonConfig: docker2aci.CommonConfig{
 			Squash:      true,
